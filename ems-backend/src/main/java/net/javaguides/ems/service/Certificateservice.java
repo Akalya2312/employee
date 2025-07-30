@@ -1,6 +1,7 @@
 package net.javaguides.ems.service;
 
 import net.javaguides.ems.dto.Certificatedto;
+import net.javaguides.ems.entity.Certificate;
 
 import java.util.List;
 

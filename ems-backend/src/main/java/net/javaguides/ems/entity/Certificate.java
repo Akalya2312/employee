@@ -1,4 +1,5 @@
 package net.javaguides.ems.entity;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,8 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
-@Getter
-@Setter
+
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -18,7 +19,7 @@ public class Certificate {
     @Column(nullable=false)
     private String cname;
     @ManyToMany(mappedBy="certificates")
-    private List<Employee> employees;
+    private List<Employee> employees= new ArrayList<>();
     public Certificate(String cname) {
         this .cname = cname;
     }

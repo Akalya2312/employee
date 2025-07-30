@@ -2,17 +2,13 @@ package net.javaguides.ems.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
-
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -53,6 +49,5 @@ public class Employee {
             inverseJoinColumns = @JoinColumn(name = "cid")
     )
     @JsonBackReference
-    @JsonIgnore
-    private List<Certificate> certificates ; // Initialize list
+    private List<Certificate> certificates = new ArrayList<>();
 }

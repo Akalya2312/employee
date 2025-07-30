@@ -1,5 +1,6 @@
 package net.javaguides.ems.service.impl;
 
+import net.javaguides.ems.dto.Certificatedto;
 import net.javaguides.ems.dto.Employeedto;
 import net.javaguides.ems.entity.Address;
 import net.javaguides.ems.entity.Certificate;
@@ -14,6 +15,7 @@ import net.javaguides.ems.repository.Departmentrepo;
 import net.javaguides.ems.repository.Employeerepo;
 import net.javaguides.ems.service.Employeeservice;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,22 +29,25 @@ public class EmployeeServiceimpl implements Employeeservice {
     private final Departmentrepo departmentrepo;
     private final Addressrepo addressrepo;
     private final Certificaterepo certificaterepo;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     public EmployeeServiceimpl(Employeerepo employeeRepository,
                                Departmentrepo departmentrepo,
                                Addressrepo addressrepo,
-                               Certificaterepo certificaterepo) {
+                               Certificaterepo certificaterepo,PasswordEncoder passwordEncoder) {
         this.employeeRepository = employeeRepository;
         this.departmentrepo = departmentrepo;
         this.addressrepo = addressrepo;
         this.certificaterepo = certificaterepo;
+        this.passwordEncoder=passwordEncoder;
     }
 
     @Override
     public Employeedto createEmployee(Employeedto employeeDto) {
 
         Employeevalidator.validate(employeeDto, employeeRepository, false, null);
+        employeeDto.setPassword(passwordEncoder.encode(employeeDto.getPassword()));
         Department dept = departmentrepo.findByDeptname(employeeDto.getDeptname())
                 .orElseGet(() -> {
                     Department newDept = new Department();
@@ -100,6 +105,7 @@ public class EmployeeServiceimpl implements Employeeservice {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee is not exist with given id: " + employeeId));
 
         Employeevalidator.validate(updatedEmployee, employeeRepository, true, employeeId);
+        updatedEmployee.setPassword(passwordEncoder.encode(updatedEmployee.getPassword()));
         EmployeeMapper.updateEmployeeFromDto(employee, updatedEmployee);
         Department dept = departmentrepo.findByDeptname(updatedEmployee.getDeptname())
                 .orElseGet(() -> {
@@ -143,5 +149,42 @@ public class EmployeeServiceimpl implements Employeeservice {
         Department dept=employee.getDepartment();
         employee.getCertificates().clear();
         employeeRepository.deleteById(employeeId);
+
     }
+
+    @Override
+    public Employeedto addCertificatesToEmployee(Long empId, List<Certificatedto> certificateDtos) {
+        Employee employee = employeeRepository.findById(empId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + empId));
+
+        for (Certificatedto certDto : certificateDtos) {
+            List<String> cnameList = certDto.getCname();
+
+            if (cnameList != null && !cnameList.isEmpty()) {
+                for (String cname : cnameList) {
+                    if (cname == null || cname.trim().isEmpty()) continue;
+
+                    String trimmedCname = cname.trim();
+
+                    Certificate certificate = certificaterepo.findByCname(trimmedCname)
+                            .orElseGet(() -> {
+                                Certificate newCert = new Certificate();
+                                newCert.setCname(trimmedCname);
+                                return certificaterepo.save(newCert);
+                            });
+
+                    if (!employee.getCertificates().contains(certificate)) {
+                        employee.getCertificates().add(certificate);
+                        certificate.getEmployees().add(employee);
+                    }
+                }
+            }
+        }
+
+        employeeRepository.save(employee);
+        return EmployeeMapper.mapToEmployeedto(employee);
+    }
+
+
+
 }

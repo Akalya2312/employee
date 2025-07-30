@@ -2,16 +2,16 @@ package net.javaguides.ems.mapper;
 import net.javaguides.ems.dto.Employeedto;
 import net.javaguides.ems.entity.Employee;
 import net.javaguides.ems.entity.Certificate;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class EmployeeMapper {
+public  class EmployeeMapper {
 
     public static Employeedto mapToEmployeedto(Employee employee) {
         List<Long> certId = new ArrayList<>();
-         List<String> certName = new ArrayList<>();
-
+        List<String> certName = new ArrayList<>();
         if (employee.getCertificates() != null) {
             for (Certificate cert : employee.getCertificates()) {
                 certId.add(cert.getCid());

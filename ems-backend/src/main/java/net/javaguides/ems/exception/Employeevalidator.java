@@ -23,10 +23,6 @@ public class Employeevalidator extends RuntimeException{
       validationErrors.add("Password cannot be empty.");
     }
 
-
-
-
-
     // 1. Duplicate email check
     repo.findByEmail(employeeDto.getEmail()).ifPresent(existing->{if(!isUpdate||!existing.getEmpid().equals(employeeId)) {
       validationErrors.add("Email already exists.");
